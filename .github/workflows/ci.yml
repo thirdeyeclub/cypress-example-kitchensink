@@ -49,18 +49,9 @@ jobs:
         with:
           eslint: true
           # prettier: true
-
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v5
-        with:
-          start: npm start
-          wait-on: 'http://localhost:3000'
   
   chrome:
-    name: Chrome
+    name: End to end testing
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
