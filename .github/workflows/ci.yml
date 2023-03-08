@@ -51,6 +51,8 @@ jobs:
           # prettier: true
 
       - uses: cypress-io/github-action@v5
+        run: |
+          apt-get -y install xvfb
         timeout-minutes: 10
         with:
           build: npm run build
