@@ -50,11 +50,11 @@ jobs:
           eslint: true
           # prettier: true
 
-      - uses: cypress-io/github-action@v5
-        run: |
-          apt-get -y install xvfb
-        timeout-minutes: 10
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
         with:
-          build: npm run build
           start: npm start
-          browser: chrome
+          wait-on: 'http://localhost:3000'
