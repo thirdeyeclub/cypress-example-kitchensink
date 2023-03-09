@@ -97,7 +97,7 @@ jobs:
         start: npm run start
         browser: chrome
       env:
-        CYPRESS_BASE_URL: https://172.17.0.1
+        CYPRESS_BASE_URL: http://localhost:8080
 
     - uses: actions/upload-artifact@v3
       with:
