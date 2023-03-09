@@ -90,6 +90,7 @@ jobs:
         npx cypress version --component electron
         npx cypress version --component node
         npm run start
+        npx cypress run --browser chrome
 
     - name: Cypress tests
       uses: cypress-io/github-action@v5
