@@ -81,14 +81,7 @@ jobs:
       env:
         CI: 1
       run: |
-        npm install
-        npx cypress verify
-        npx cypress info
-        npx cypress version
-        npx cypress version --component package
-        npx cypress version --component binary
-        npx cypress version --component electron
-        npx cypress version --component node
+        docker run -it -v $PWD:/e2e -w /e2e cypress/included:3.4.0
 
     - name: Cypress tests
       uses: cypress-io/github-action@v5
