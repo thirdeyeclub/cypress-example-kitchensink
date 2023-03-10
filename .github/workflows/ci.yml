@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  container-job:
+    name: Run CI container
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    container: node:16.17.0
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: druid
+          POSTGRES_USER: druid
+          POSTGRES_PASSWORD: druid
+          POSTGRES_PORT: 5432
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      # ESLint and Prettier must be in `package.json`
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v1
+        with:
+          eslint: true
+          # prettier: true
+  
+  end2end:
+    name: End to End Testing
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js v14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+
+    - name: Cache node modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Cache Cypress binary
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/Cypress
+        key: cypress-${{ runner.os }}-cypress-${{ hashFiles('**/package.json') }}
+        restore-keys: |
+          cypress-${{ runner.os }}-cypress-
+
+    - name: install dependencies and verify Cypress
+      env:
+        CI: 1
+      run: |
+        docker run -v $PWD/cypress:/e2e -w /e2e cypress/included:3.4.0
+
+    - name: Cypress tests
+      uses: cypress-io/github-action@v5
+      timeout-minutes: 10
+      with:
+        start: npm run start
+        browser: chrome
+      env:
+        CYPRESS_BASE_URL: http://localhost:8080
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: screenshots
+        path: cypress/screenshots
+        if: failure()
