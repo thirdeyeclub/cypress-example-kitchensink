@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  
+  end2end:
+    name: End to End Testing
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js v14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+
+    - name: Cache node modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Cache Cypress binary
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/Cypress
+        key: cypress-${{ runner.os }}-cypress-${{ hashFiles('**/package.json') }}
+        restore-keys: |
+          cypress-${{ runner.os }}-cypress-
+
+    - name: install dependencies and verify Cypress
+      env:
+        CI: 1
+      run: |
+        npm install
+        npx cypress verify
+        npx cypress info
+        npx cypress version
+        npx cypress version --component package
+        npx cypress version --component binary
+        npx cypress version --component electron
+        npx cypress version --component node
+
+    - name: Cypress tests
+      uses: cypress-io/github-action@v5
+      env:
+          NO_SANDBOX: 1
+          JWT_KEY: cypress
+          TWILIO_ACCOUNT_SID: AC123
+          TWILIO_AUTH_TOKEN: AC123
+          SENDGRID_API_KEY: SG.asdas
+      timeout-minutes: 10
+      with:
+        start: npm run start
+        browser: chrome
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: screenshots
+        path: cypress/screenshots
+        if: failure()
