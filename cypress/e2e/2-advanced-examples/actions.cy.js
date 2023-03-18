@@ -14,7 +14,7 @@ context('Actions', () => {
 
       // .type() with special character sequences
       .type('{leftarrow}{rightarrow}{uparrow}{downarrow}')
-      .type('{del}{selectall}{backspace}')
+      .type('{del}{selectall}{backspace}') 
 
       // .type() with key modifiers
       .type('{alt}{option}') //these are equivalent
